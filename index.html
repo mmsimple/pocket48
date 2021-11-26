@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+  <link rel="stylesheet" type="text/css" href="css/index.css" charset="utf-8">
+  <title>RO Pocket</title>
+</head>
+
+<body>
+  <div id="root">
+    <div class="title">
+      <el-select v-model="roomName" filterable clearable remote reserve-keyword placeholder="搜索偶像" :remote-method="remoteMethod"
+        :loading="loading">
+        <el-option v-for="item in searchArr" :key="item.roomId" :label="item.name" :value="item.name">
+        </el-option>
+      </el-select>
+      <el-button class="title-btn" round @click="searchByName">搜索</el-button>
+    </div>
+    <div>
+    </div>
+    <div v-if="stage==='ONLINE'" class="container">
+      <div class="room-head">
+        {{roomName}}
+      </div>
+      <div class="room-box">
+        <div v-for="msg in filterMsgs" :key="msg.idClient" @click="inspect(msg)">
+          <div class="msg-item">
+            <img class="avatar" :src="base+msg.custom.user?.avatar" alt="">
+            <div class="msg-item-content">
+              <span class="nickName">
+                {{msg.custom.user?.nickName}}
+              </span>
+              <span class="time">
+                {{time(msg.time)}}
+                <!-- {{new Date(msg.time)}} -->
+              </span>
+              <div class="content">
+                {{msg.custom.text}}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <!-- <div id="msgs">
+      <div class="each" v-for="msg in msgs" :key="msg.idClient" @click="inspect(msg)">
+        {{msg.custom.user?.nickName}}
+        {{new Date(msg.time).toLocaleString()}}
+        <br />
+        {{msg.custom.text}}
+      </div>
+    </div> -->
+  </div>
+  <script src="js/NIM_Web_SDK_v8.3.5.js"></script>
+  <script src="js/data_people.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!--<script src="https://unpkg.com/vue@next"></script>-->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script>
+    import parseTime from './utils/index.js'
+    const appKey = '632feff1f4c838541ab75195d1ceb3fa';
+    const chatroomAddresses = ['chatweblink01.netease.im:443'];
+    const roomId = '67362271';
+    const onwillreconnect = (...args) => { console.log('r', args); };
+    const onerror = (...args) => { console.log('e', args); };
+
+    new Vue({
+      el: '#root',
+      data: {
+        base: 'https://source.48.cn/',
+        chatroom: null,
+        stage: 'OFFLINE',
+        msgs: [],
+        roomName: '',
+        roomArr: [],
+        searchArr: [],
+        loading: false,
+      },
+      created() {
+        console.log('DataPeople', DataPeople)
+      },
+      watch: {
+        roomName() {
+          const len = this.roomName.length
+          this.roomArr = DataPeople.filter(people => {
+            return this.roomName !== '' && (people.name.includes(this.roomName) || people.abbr.slice(0, len) === this.roomName)
+          })
+        },
+      },
+      computed: {
+        filterMsgs() {
+          const a =  this.msgs.filter(msg => {
+            return msg.custom.messageType !== 'DELETE' && msg.custom.user.roleId === 3
+          })
+          console.log('a',a)
+          return a
+        },
+        time() {
+          return function(a) {
+            console.log(parseTime(a))
+            return 1
+          }
+        }
+      },
+      methods: {
+        init(id) {
+          this.chatroom = SDK.Chatroom.getInstance({
+            appKey,
+            isAnonymous: true,
+            chatroomNick: 'RO',
+            // account: account,
+            // token: account,
+            chatroomId: id,
+            chatroomAddresses,
+            onconnect: this.onconnect.bind(this),
+            onwillreconnect,
+            ondisconnect: () => { this.stage = 'OFFLINE'; },
+            onerror,
+            onmsgs: this.onmsgs.bind(this),
+          });
+        },
+        onconnect() {
+          this.stage = 'ONLINE';
+          this.earlier()
+        },
+        onmsgs(msgs) {
+          this.msgs = [...this.msgs, ...msgs.filter(msg => !msg.resend).map(msg => ({ ...msg, custom: JSON.parse(msg.custom) }))];
+        },
+        earlier() {
+          this.chatroom.getHistoryMsgs({
+            timetag: this.msgs[0]?.time,
+            done: (err, obj) => {
+              if (err) {
+                console.log(err);
+                return;
+              }
+              const msgs = [...obj.msgs];
+              console.log(msgs)
+              msgs.reverse();
+              this.msgs = [...msgs.filter(msg => !msg.resend).map(msg => ({ ...msg, custom: JSON.parse(msg.custom) })), ...this.msgs];
+              console.log(this.msgs)
+            },
+          })
+        },
+        inspect(msg) {
+          console.log(JSON.parse(JSON.stringify(msg)));
+        },
+
+        searchByName() {
+          const id = this.roomArr[0].roomId
+          this.init(id)
+        },
+
+        remoteMethod(serchName) {
+          if (serchName !== '') {
+            this.loading = true;
+            const len = serchName.length
+            setTimeout(() => {
+              this.loading = false;
+              this.searchArr = DataPeople.filter(people => {
+                return serchName !== '' && (people.name.includes(serchName) || people.abbr.slice(0, len) === serchName)
+              })
+            }, 200)
+            console.log(this.searchArr)
+          } else {
+            this.searchArr = []
+          }
+        }
+      },
+    });
+  </script>
+</body>
+
+</html>
