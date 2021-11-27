@@ -76,4 +76,5 @@
 .content-img {
   width: 70%;
   height: auto;
+  border-radius: 10px;
 }

@@ -24,9 +24,9 @@
 
     <div v-if="stage === 'ONLINE'" class="container">
       <div class="room-head">
-        {{ roomName }}
+        {{ showName }}
       </div>
-      <div class="room-box" ref="scroll-box" @scroll.passive="scrollGet($event)">
+      <div class="room-box" ref="scroll-box" @scroll="scrollGet($event)">
         <div
           v-for="msg in filterMsgs"
           :key="msg.idClient"
@@ -45,7 +45,7 @@
               {{ msg.custom.text }}
             </div>
             <div v-else-if="msg.type === 'image'" class="content">
-              <img class="content-img" :src="msg.file.url"/>
+              <img class="content-img" :src="msg.file.url" @onload="!flag ? toEnd: ''"/>
             </div>
             <div v-else class="content"></div>
           </div>
@@ -65,33 +65,19 @@ export default {
   watch: {
     roomName() {
       const len = this.roomName.length
-      this.roomArr = this.dataPeople.filter((people) => {
-        return (
-          this.roomName !== "" &&
-          (people.name.includes(this.roomName) ||
-            people.abbr.slice(0, len) === this.roomName)
-        )
+      this.roomArr = this.dataPeople.filter(people => {
+        return this.roomName !== '' && (people.name.includes(this.roomName) || people.abbr.slice(0, len) === this.roomName)
       })
     },
-   
   },
   computed: {
     filterMsgs() {
       const a = this.msgs.filter((msg) => {
         return (
-          msg.custom.messageType !== "DELETE" && msg.custom.user.roleId === 3
+          msg.custom.messageType !== "DELETE" && msg.custom.user?.roleId === 3
         )
       })
       return a
-    },
-    filterMsgType() {
-      return (msg) => {
-        if (msg.type === "text") {
-          return msg.custom.text
-        } else if (msg.type === "image") {
-          return
-        }
-      }
     },
     time() {
       return function (time) {
@@ -110,6 +96,7 @@ export default {
       searchArr: [],
       loading: false,
       dataPeople: this.$store.state.dataPeople,
+      showName: ''
     }
   },
   methods: {
@@ -143,10 +130,10 @@ export default {
     // 与sdk连接上
     async onconnect() {
       this.stage = "ONLINE"
-      await this.earlier()
+      await this.oneDayMsg()
       setTimeout(() => {
         this.toEnd()
-      }, 500)
+      }, 200)
     },
     // 获取实时消息
     onmsgs(msgs) {
@@ -157,9 +144,29 @@ export default {
           .map((msg) => ({ ...msg, custom: JSON.parse(msg.custom) })),
       ]
     },
+    // 获取一天的消息
+    async oneDayMsg() {
+      let timetag = this.msgs[0] ? new Date(this.msgs[0].time) : new Date()
+      let flag = true
+      let count = 0
+      while(flag) {
+        await this.earlier()
+        if(this.msgs.length === 0) {
+          alert('该房间没有消息')
+          break
+        }
+        if(new Date() - timetag >= 86400e3) {
+          break
+        }
+        count++
+        if(count >= 30) {
+          break
+        }
+      }
+    },
+
     // 获取早期消息
     earlier() {
-      console.log(222222)
       return new Promise ((resolve) => {
         this.chatroom.getHistoryMsgs({
           timetag: this.msgs[0]?.time,
@@ -188,8 +195,14 @@ export default {
     },
     // 通过名字查询
     searchByName() {
-      const id = this.roomArr[0].roomId
+      const id = this.roomArr[0]?.roomId
+      this.showName = this.roomArr[0]?.name
       this.msgs = []
+      this.roomArr = []
+      this.roomName = ''
+      this.searchArr = []
+      this.chatroom?.disconnect()
+      this.chatroom = null
       this.init(id)
     },
 
@@ -212,6 +225,7 @@ export default {
         this.searchArr = []
       }
     },
+
     // 加赞最新，滚动条滚到最后
     toEnd() {
       this.$nextTick(() => {
@@ -221,10 +235,9 @@ export default {
     },
     // 监听滚动事件
     async scrollGet(e) {
+      // console.log(e)
       if(e.target.scrollTop === 0) {
-        console.log(e.target)
         await this.earlier()
-        // setInterval(this.debounce(this.earlier() , 1000),100)
       }
     },
   },
