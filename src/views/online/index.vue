@@ -109,7 +109,7 @@ export default {
     // 通过名字查询
     searchByName() {
       this.showName = this.roomArr[0]?.name
-      this.$axios.get(`${this.base}?chatroomOwner=${this.showName}`).then(res => {
+      this.$axios.get(`/dev-api?chatroomOwner=${this.showName}`).then(res => {
         this.roomList = res.data.hits
       })
     },
