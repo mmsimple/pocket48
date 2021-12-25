@@ -40,7 +40,7 @@ import { parseTime } from "@/utils/index.js"
 export default {
   data() {
     return {
-      base: "http://150.158.57.59:8048/api/visits",
+      base: "https://raw.xox48.com:8048/api/visits",
       chatroom: null,
       roomName: "",
       roomArr: [],
@@ -109,7 +109,7 @@ export default {
     // 通过名字查询
     searchByName() {
       this.showName = this.roomArr[0]?.name
-      this.$axios.get(`/dev-api?chatroomOwner=${this.showName}`).then(res => {
+      this.$axios.get(`${this.base}?chatroomOwner=${this.showName}`).then(res => {
         this.roomList = res.data.hits
       })
     },

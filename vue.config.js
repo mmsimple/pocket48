@@ -30,17 +30,6 @@ module.exports = {
       warnings: false,
       errors: true
     },
-    proxy: {
-      ["/dev-api"]: {
-        target: 'http://150.158.57.59:8048/api/visits',//api是后端接口地址
-        changeOrigin: true,
-        secure: true,
-        ws: true,
-        pathRewrite: {
-          "^/dev-api": ''
-        }
-      }
-    }
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that
