@@ -113,7 +113,7 @@ export default {
       this.chatroom = this.Nim.Chatroom.getInstance({
         appKey,
         isAnonymous: true,
-        chatroomNick: "RO",
+        chatroomNick: "WebAgent",
         // account: account,
         // token: account,
         chatroomId: id,
