@@ -9,7 +9,7 @@
     <div class="content">如果再有下次，我们会下架自己玩。</div>
 
     
-    <div class="content">&emsp;&emsp;某些yyh拿着我们产品带节奏换取流量是不是要给我们分红一些。其他人想打赏也可以，感谢大家给我们服务器添砖加瓦！</div>
+    <div class="content">&emsp;&emsp;某些yxh拿着我们产品带节奏换取流量是不是要给我们分红一些。其他人想打赏也可以，感谢大家给我们服务器添砖加瓦！</div>
     <img class="img" src="@/img/sf.png" alt="">
     <div class="button">
       <el-button @click="toChat">聊天</el-button>
