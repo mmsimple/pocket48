@@ -17,6 +17,11 @@ const routes = [
     path: '/online',
     name: 'Online',
     component: () => import('@/views/online/index.vue')
+  },
+  {
+    path: '/status',
+    name: 'Status',
+    component: () => import('@/views/status/index.vue')
   }
   // {
   //   path: '/about',

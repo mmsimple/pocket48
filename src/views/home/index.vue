@@ -17,6 +17,9 @@
     <div class="button">
       <el-button @click="toOnline">串门</el-button>
     </div>
+    <div class="button">
+      <el-button @click="toStatus">实时人数</el-button>
+    </div>
   </div>
 </template>
 
@@ -29,9 +32,12 @@ export default {
     },
     toOnline() {
       this.$router.push('/online')
+    },
+    toStatus() {
+      this.$router.push('/status')
     }
   }
 }
 </script>
 
-<style src="./style.css"></style>
+<style src="./style.css" scoped></style>
