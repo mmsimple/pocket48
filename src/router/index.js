@@ -8,11 +8,11 @@ const routes = [
     name: 'Home',
     component: Home
   },
-  {
-    path: '/chat',
-    name: 'Chat',
-    component: () => import('../views/chat/index.vue')
-  },
+  // {
+  //   path: '/chat',
+  //   name: 'Chat',
+  //   component: () => import('../views/chat/index.vue')
+  // },
   {
     path: '/online',
     name: 'Online',
